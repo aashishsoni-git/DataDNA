@@ -1,0 +1,8 @@
+pandas
+numpy
+scikit-learn
+rapidfuzz
+openai
+snowflake-connector-python
+streamlit
+python-dotenv
