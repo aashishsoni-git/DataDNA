@@ -68,3 +68,45 @@ def save_mapping_to_csv(results, filename="mapping.csv"):
     df = pd.DataFrame(results)
     df.to_csv(filename, index=False)
     return filename
+
+def get_signatures(schema_name):
+    query = f"""
+    SELECT TABLE_NAME, COLUMN_NAME, COLUMN_CODE, PROFILE
+    FROM {TABLE_SIGNATURES}
+    WHERE SCHEMA_NAME = %s
+    """
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(query, (schema_name,))
+        rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "table_name": r[0],
+            "col_name": r[1],
+            "code": r[2],
+            "profile": json.loads(r[3]) if r[3] else {}
+        })
+    return results
+
+def get_mappings(src_schema, tgt_schema):
+    query = f"""
+    SELECT SRC_TABLE, SRC_COLUMN, TGT_TABLE, TGT_COLUMN, SCORE, DECISION
+    FROM {TABLE_MAPPINGS}
+    WHERE SRC_SCHEMA = %s AND TGT_SCHEMA = %s
+    """
+    with get_connection() as conn:
+        cur = conn.cursor()
+        cur.execute(query, (src_schema, tgt_schema))
+        rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "Source Table": r[0],
+            "Source Column": r[1],
+            "Best Target Table": r[2],
+            "Best Target Column": r[3],
+            "Score": r[4],
+            "Decision": r[5]
+        })
+    return results
